@@ -49,7 +49,7 @@ python -m api.src.app
 
 ### 1. Agregar un email a la lista negra global
 
-**EP:** `POST /blacklist`
+**EP:** `POST /blacklists`
 
 **Descripción:** Agrega un correo electrónico a la lista negra; solo los usuarios autenticados pueden hacerlo.
 

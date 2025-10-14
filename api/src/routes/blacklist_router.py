@@ -10,7 +10,7 @@ blacklist_bp = Blueprint("blacklist", __name__)
 
 
 # 1. Add an email to the blacklist
-@blacklist_bp.route("/blacklist", methods=["POST"])
+@blacklist_bp.route("/blacklists", methods=["POST"])
 def create():
     data = request.get_json()
     auth_header = request.headers.get("Authorization")
