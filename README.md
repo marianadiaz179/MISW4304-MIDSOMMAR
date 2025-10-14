@@ -51,7 +51,7 @@ python -m api.src.app
 
 **EP:** `POST /blacklist`
 
-**Descripción:** Crea una nueva cuenta en la blacklist. Solo los usuarios autenticados pueden crear una blacklist.
+**Descripción:** Agrega un correo electrónico a la lista negra; solo los usuarios autenticados pueden hacerlo.
 
 **Datos de entrada (JSON):**
 
@@ -82,26 +82,34 @@ python -m api.src.app
 ```
 
 3. Cuando la validacion del payload falla, el servidor devuelve un código de estado 400 y un mensaje de:
-
-```json
-// Falta un parametro
-{
-    "msg": "Missing parameter {param}"
-}
-// Los parametros no son strings
-{
-    "msg": "{param} must be a string."
-}
-// El email no es valido
-{
-    "msg": "email is not a valid email"
-}
-// app_uuid no es un UUID
-{
-    "msg": "app_uuid is not a valid UUID"
-}
-// blocked_reason tiene mas de 255 caracteres
-{
-    "msg": "blocked_reason must have a maximum of 255 characters"
-}
-```
+   
+   3.1. Falta un parametro
+   ```json
+    {
+        "msg": "Missing parameter {param}"
+    }
+    ```
+   3.2. Los parametros no son strings
+   ```json
+    {
+        "msg": "{param} must be a string."
+    }
+    ```
+   3.3. El email no es valido
+   ```json
+    {
+        "msg": "email is not a valid email"
+    }
+    ```
+   3.4. app_uuid no es un UUID
+    ```json
+    {
+        "msg": "app_uuid is not a valid UUID"
+    }
+    ```
+   3.5. blocked_reason tiene mas de 255 caracteres
+   ```json
+    {
+        "msg": "blocked_reason must have a maximum of 255 characters"
+    }
+    ```
