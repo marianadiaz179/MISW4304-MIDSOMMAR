@@ -1,0 +1,3319 @@
+{
+  "collection": {
+    "_": {
+      "postman_id": "blacklist-microservice-tests"
+    },
+    "item": [
+      {
+        "id": "90616ac5-05b8-42fe-bc50-66e526c6b8a4",
+        "name": "Health Check",
+        "request": {
+          "description": {
+            "content": "Health check endpoint to verify the service is running",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists",
+              "ping"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "e3287373-cf95-4b64-9683-7f8d4e9f9fcc",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"Response is 'pong'\", function () {",
+                "    pm.expect(pm.response.text()).to.eql(\"pong\");",
+                "});",
+                "",
+                "pm.test(\"Response time is less than 1000ms\", function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});"
+              ],
+              "_lastExecutionId": "aae7ee76-2176-496d-936c-e0ae1810bf9b"
+            }
+          }
+        ]
+      },
+      {
+        "id": "aa64edfd-63f7-4c66-9e5a-3e0dbf14c421",
+        "name": "Add Email to Blacklist - Success",
+        "request": {
+          "description": {
+            "content": "Add an email to the global blacklist successfully",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{test_uuid}}\",\n    \"blocked_reason\": \"Test reason for blacklisting\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "3d82f050-da2b-49c2-9398-84daf4fbbd8b",
+              "type": "text/javascript",
+              "exec": [
+                "// Generate a unique email for testing",
+                "const timestamp = Date.now();",
+                "pm.globals.set(\"test_email\", `test${timestamp}@example.com`);",
+                "pm.globals.set(\"test_uuid\", pm.variables.replaceIn('{{$randomUUID}}'));"
+              ],
+              "_lastExecutionId": "df352d76-9a9f-409f-b065-9b1b4212d6b0"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "2390e0b9-21b7-434d-8db7-0f505c944b7e",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 201\", function () {",
+                "    pm.response.to.have.status(201);",
+                "});",
+                "",
+                "pm.test(\"Response has success message\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.eql(\"Email added to the blacklist\");",
+                "});",
+                "",
+                "pm.test(\"Response time is less than 2000ms\", function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "pm.test(\"Response is JSON\", function () {",
+                "    pm.response.to.be.json;",
+                "});"
+              ],
+              "_lastExecutionId": "8877beac-7f20-4c28-9ab5-e7988d93fe27"
+            }
+          }
+        ]
+      },
+      {
+        "id": "4ffd1c17-7f07-420a-9eda-d2583f98ced8",
+        "name": "Check Email Blacklist Status - Found",
+        "request": {
+          "description": {
+            "content": "Check if the previously added email is in the blacklist",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists",
+              "{{test_email}}"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "a66fde43-62eb-4db3-a39e-afc5d37a697a",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"Email is blacklisted\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.blacklisted).to.be.true;",
+                "});",
+                "",
+                "pm.test(\"Blocked reason is present\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.blocked_reason).to.exist;",
+                "});",
+                "",
+                "pm.test(\"Response time is less than 1000ms\", function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});"
+              ],
+              "_lastExecutionId": "35e9eb4e-d2e5-4687-a93e-268dcb45f05e"
+            }
+          }
+        ]
+      },
+      {
+        "id": "2d535858-ce29-4410-a7d2-6974f211a3de",
+        "name": "Add Email to Blacklist - Duplicate",
+        "request": {
+          "description": {
+            "content": "Try to add the same email again to test duplicate handling",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Duplicate test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "968d8442-da43-4b34-a979-7e3a98838688",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 409 (Conflict)\", function () {",
+                "    pm.response.to.have.status(409);",
+                "});",
+                "",
+                "pm.test(\"Response indicates email already exists\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.eql(\"Email is already in the blacklist\");",
+                "});"
+              ],
+              "_lastExecutionId": "857fbb1a-2576-4e26-9348-b81f6071028d"
+            }
+          }
+        ]
+      },
+      {
+        "id": "8c238e42-a59b-4d9a-91fb-744500540b03",
+        "name": "Add Email to Blacklist - Missing Parameters",
+        "request": {
+          "description": {
+            "content": "Test error handling when required parameters are missing",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test2@example.com\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "a9c84824-ebe1-445f-af43-6420be41b6fc",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                "    pm.response.to.have.status(400);",
+                "});",
+                "",
+                "pm.test(\"Response indicates missing parameter\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.include(\"Missing parameter\");",
+                "});"
+              ],
+              "_lastExecutionId": "d4b82f4b-de80-4b33-85cc-fb7dab843ec9"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b1f3b155-8c61-49aa-a433-7497c772e5a7",
+        "name": "Add Email to Blacklist - Invalid Email",
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid email format",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"invalid-email\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid email\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "b4e3f981-6bbd-4b50-92ca-a7950417ecf7",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                "    pm.response.to.have.status(400);",
+                "});",
+                "",
+                "pm.test(\"Response indicates invalid email\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.include(\"not a valid email\");",
+                "});"
+              ],
+              "_lastExecutionId": "e0b431db-1e00-4994-b9d3-15f2e60d15b4"
+            }
+          }
+        ]
+      },
+      {
+        "id": "e43397f7-7f93-43fb-b2cb-414f0892149b",
+        "name": "Add Email to Blacklist - Invalid UUID",
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid UUID format",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test3@example.com\",\n    \"app_uuid\": \"invalid-uuid\",\n    \"blocked_reason\": \"Test with invalid UUID\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "147fc4b0-1f30-4dc8-b4b9-36b1036a67a3",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                "    pm.response.to.have.status(400);",
+                "});",
+                "",
+                "pm.test(\"Response indicates invalid UUID\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.include(\"not a valid UUID\");",
+                "});"
+              ],
+              "_lastExecutionId": "e1486579-5124-43da-8b3a-1181232527af"
+            }
+          }
+        ]
+      },
+      {
+        "id": "230c28ae-e8dc-4836-9d72-8f4a5b6930c1",
+        "name": "Add Email to Blacklist - Invalid Token",
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid authorization token",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer invalid_token"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test4@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid token\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "39c7d472-c315-424b-83c6-8111fddccec3",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+                "    pm.response.to.have.status(401);",
+                "});",
+                "",
+                "pm.test(\"Response indicates invalid token\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+                "});"
+              ],
+              "_lastExecutionId": "4a564b12-e8ea-47b0-b02d-5145598a6aed"
+            }
+          }
+        ]
+      },
+      {
+        "id": "20d1610c-34c0-4ebe-9a11-309911ed12bd",
+        "name": "Add Email to Blacklist - Missing Authorization",
+        "request": {
+          "description": {
+            "content": "Test error handling when authorization header is missing",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test5@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test without authorization\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "30d4abd1-63bb-487a-9948-1b12b56c49ef",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 403 (Forbidden)\", function () {",
+                "    pm.response.to.have.status(403);",
+                "});",
+                "",
+                "pm.test(\"Response indicates missing authorization\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.eql(\"Authorization header is required\");",
+                "});"
+              ],
+              "_lastExecutionId": "e61ae1d0-4260-44c7-a7ac-b3f39f7be5b8"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ab07e0a8-8559-466f-a7de-ff5fbd10d788",
+        "name": "Check Non-existent Email",
+        "request": {
+          "description": {
+            "content": "Check an email that is not in the blacklist",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists",
+              "nonexistent@example.com"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{secret_token}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "2126ccb5-7b55-4311-bd92-1e4bb9ffc9bb",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"Email is not blacklisted\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.blacklisted).to.be.false;",
+                "});",
+                "",
+                "pm.test(\"Response time is less than 1000ms\", function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});"
+              ],
+              "_lastExecutionId": "216a57b5-4993-4f85-bbc4-d037c52e5874"
+            }
+          }
+        ]
+      },
+      {
+        "id": "62f79a02-0d6b-43e9-8c7a-3756e0999ab7",
+        "name": "Check Email Blacklist - Invalid Token",
+        "request": {
+          "description": {
+            "content": "Test GET endpoint with invalid token",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "blacklists",
+              "test@example.com"
+            ],
+            "host": [
+              "{{base_url}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer invalid_token"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "902ca76a-790b-4f79-a12d-1ac58565883e",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+                "    pm.response.to.have.status(401);",
+                "});",
+                "",
+                "pm.test(\"Response indicates invalid token\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+                "});"
+              ],
+              "_lastExecutionId": "f5302319-e60c-4521-8fcd-d2efe0b3a47d"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "id": "20d8b629-3ea3-4c23-a37e-82d7ecf4e288",
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ],
+          "_lastExecutionId": "57ac7ad2-2338-41cd-a86b-4d43d415c124"
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "id": "982ce710-885d-4ade-a3a8-d355de1321d2",
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ],
+          "_lastExecutionId": "855778f0-cfd5-4ec4-b52d-ca512b4f33c2"
+        }
+      }
+    ],
+    "variable": [
+      {
+        "type": "string",
+        "value": "http://localhost:3000",
+        "key": "base_url"
+      },
+      {
+        "type": "string",
+        "value": "test_secret_token_123",
+        "key": "secret_token"
+      }
+    ],
+    "info": {
+      "_postman_id": "blacklist-microservice-tests",
+      "name": "Blacklist Microservice API - With Tests",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Complete collection for testing the Blacklist Microservice endpoints with Newman test scripts",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "id": "5ba51444-8c9b-437b-a824-ce631beef43b",
+    "values": []
+  },
+  "globals": {
+    "id": "ef2ed898-4deb-4c0a-b075-15e1dd506155",
+    "values": [
+      {
+        "type": "any",
+        "value": "http://localhost:3000",
+        "key": "base_url"
+      },
+      {
+        "type": "any",
+        "value": "test_secret_token_123",
+        "key": "secret_token"
+      },
+      {
+        "type": "any",
+        "value": "test1760925090339@example.com",
+        "key": "test_email"
+      },
+      {
+        "type": "any",
+        "value": "b96c0ae9-d883-4bd1-b2ee-6eddbcee32ee",
+        "key": "test_uuid"
+      }
+    ]
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 11,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 34,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 11,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 11,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 11,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 28,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 22,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 5.363636363636363,
+      "responseMin": 2,
+      "responseMax": 18,
+      "responseSd": 4.47767649309991,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1760925090280,
+      "completed": 1760925090531
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 11,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "f89488d8-de3c-47f2-b185-134c228203ef",
+          "httpRequestId": "d0f2a238-24c5-4bd9-aa26-f7a0c33895a9"
+        },
+        "item": {
+          "id": "90616ac5-05b8-42fe-bc50-66e526c6b8a4",
+          "name": "Health Check",
+          "request": {
+            "description": {
+              "content": "Health check endpoint to verify the service is running",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists",
+                "ping"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e3287373-cf95-4b64-9683-7f8d4e9f9fcc",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is 'pong'\", function () {",
+                  "    pm.expect(pm.response.text()).to.eql(\"pong\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ],
+                "_lastExecutionId": "aae7ee76-2176-496d-936c-e0ae1810bf9b"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Health check endpoint to verify the service is running",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists",
+              "ping"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "609fea7c-85df-4253-8966-4407bad67d15",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "119b5452-cb53-46eb-bbc7-8a64782337e5",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "4"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              112,
+              111,
+              110,
+              103
+            ]
+          },
+          "cookie": [],
+          "responseTime": 18,
+          "responseSize": 4
+        },
+        "id": "90616ac5-05b8-42fe-bc50-66e526c6b8a4",
+        "assertions": [
+          {
+            "assertion": "Status code is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Response is 'pong'",
+            "skipped": false
+          },
+          {
+            "assertion": "Response time is less than 1000ms",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "a23cf24f-5b26-43e6-aa4d-b941dc29a42b",
+          "length": 11,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "8d017ee3-8dee-472d-8aa0-7be5edd262a9"
+        },
+        "item": {
+          "id": "aa64edfd-63f7-4c66-9e5a-3e0dbf14c421",
+          "name": "Add Email to Blacklist - Success",
+          "request": {
+            "description": {
+              "content": "Add an email to the global blacklist successfully",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{test_uuid}}\",\n    \"blocked_reason\": \"Test reason for blacklisting\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "3d82f050-da2b-49c2-9398-84daf4fbbd8b",
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate a unique email for testing",
+                  "const timestamp = Date.now();",
+                  "pm.globals.set(\"test_email\", `test${timestamp}@example.com`);",
+                  "pm.globals.set(\"test_uuid\", pm.variables.replaceIn('{{$randomUUID}}'));"
+                ],
+                "_lastExecutionId": "df352d76-9a9f-409f-b065-9b1b4212d6b0"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "2390e0b9-21b7-434d-8db7-0f505c944b7e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success message\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql(\"Email added to the blacklist\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ],
+                "_lastExecutionId": "8877beac-7f20-4c28-9ab5-e7988d93fe27"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Add an email to the global blacklist successfully",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "588e5158-e55d-4342-8693-983c8d3532c5",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "158",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test1760925090339@example.com\",\n    \"app_uuid\": \"b96c0ae9-d883-4bd1-b2ee-6eddbcee32ee\",\n    \"blocked_reason\": \"Test reason for blacklisting\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "106034ff-02c6-4a7d-9aed-22e1a383d6c8",
+          "status": "CREATED",
+          "code": 201,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "44"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              69,
+              109,
+              97,
+              105,
+              108,
+              32,
+              97,
+              100,
+              100,
+              101,
+              100,
+              32,
+              116,
+              111,
+              32,
+              116,
+              104,
+              101,
+              32,
+              98,
+              108,
+              97,
+              99,
+              107,
+              108,
+              105,
+              115,
+              116,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 10,
+          "responseSize": 44
+        },
+        "id": "aa64edfd-63f7-4c66-9e5a-3e0dbf14c421",
+        "assertions": [
+          {
+            "assertion": "Status code is 201",
+            "skipped": false
+          },
+          {
+            "assertion": "Response has success message",
+            "skipped": false
+          },
+          {
+            "assertion": "Response time is less than 2000ms",
+            "skipped": false
+          },
+          {
+            "assertion": "Response is JSON",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "56445945-940a-4438-ade0-2644e1006d2c",
+          "length": 11,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "68b5d214-1ccc-47ee-8820-4bd1ed58f260"
+        },
+        "item": {
+          "id": "4ffd1c17-7f07-420a-9eda-d2583f98ced8",
+          "name": "Check Email Blacklist Status - Found",
+          "request": {
+            "description": {
+              "content": "Check if the previously added email is in the blacklist",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists",
+                "{{test_email}}"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a66fde43-62eb-4db3-a39e-afc5d37a697a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Email is blacklisted\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.blacklisted).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Blocked reason is present\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.blocked_reason).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ],
+                "_lastExecutionId": "35e9eb4e-d2e5-4687-a93e-268dcb45f05e"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Check if the previously added email is in the blacklist",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists",
+              "test1760925090339@example.com"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "6db626d1-4e9b-4886-8079-7015f765df7d",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "4fa731da-3a57-48a6-875d-ce9a0c16c7c5",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "78"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              98,
+              108,
+              97,
+              99,
+              107,
+              108,
+              105,
+              115,
+              116,
+              101,
+              100,
+              34,
+              58,
+              32,
+              116,
+              114,
+              117,
+              101,
+              44,
+              10,
+              32,
+              32,
+              34,
+              98,
+              108,
+              111,
+              99,
+              107,
+              101,
+              100,
+              95,
+              114,
+              101,
+              97,
+              115,
+              111,
+              110,
+              34,
+              58,
+              32,
+              34,
+              84,
+              101,
+              115,
+              116,
+              32,
+              114,
+              101,
+              97,
+              115,
+              111,
+              110,
+              32,
+              102,
+              111,
+              114,
+              32,
+              98,
+              108,
+              97,
+              99,
+              107,
+              108,
+              105,
+              115,
+              116,
+              105,
+              110,
+              103,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 78
+        },
+        "id": "4ffd1c17-7f07-420a-9eda-d2583f98ced8",
+        "assertions": [
+          {
+            "assertion": "Status code is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Email is blacklisted",
+            "skipped": false
+          },
+          {
+            "assertion": "Blocked reason is present",
+            "skipped": false
+          },
+          {
+            "assertion": "Response time is less than 1000ms",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9c8429b4-39ab-4bae-81d0-7d3e6148138c",
+          "length": 11,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "3cedd3f7-ad31-451d-87a6-1a237678717f"
+        },
+        "item": {
+          "id": "2d535858-ce29-4410-a7d2-6974f211a3de",
+          "name": "Add Email to Blacklist - Duplicate",
+          "request": {
+            "description": {
+              "content": "Try to add the same email again to test duplicate handling",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Duplicate test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "968d8442-da43-4b34-a979-7e3a98838688",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409 (Conflict)\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates email already exists\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql(\"Email is already in the blacklist\");",
+                  "});"
+                ],
+                "_lastExecutionId": "857fbb1a-2576-4e26-9348-b81f6071028d"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Try to add the same email again to test duplicate handling",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "c856fd07-34ef-4398-90d6-cd06feb29e85",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "144",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test1760925090339@example.com\",\n    \"app_uuid\": \"90bbf529-b5b3-4dc6-937a-8f19424b6e13\",\n    \"blocked_reason\": \"Duplicate test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "cb027307-9997-4ccf-95bd-3d4f7f64671d",
+          "status": "CONFLICT",
+          "code": 409,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "49"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              69,
+              109,
+              97,
+              105,
+              108,
+              32,
+              105,
+              115,
+              32,
+              97,
+              108,
+              114,
+              101,
+              97,
+              100,
+              121,
+              32,
+              105,
+              110,
+              32,
+              116,
+              104,
+              101,
+              32,
+              98,
+              108,
+              97,
+              99,
+              107,
+              108,
+              105,
+              115,
+              116,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 49
+        },
+        "id": "2d535858-ce29-4410-a7d2-6974f211a3de",
+        "assertions": [
+          {
+            "assertion": "Status code is 409 (Conflict)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates email already exists",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9dba1cb6-cbd4-47a2-bcda-f15697a771c4",
+          "length": 11,
+          "cycles": 1,
+          "position": 4,
+          "iteration": 0,
+          "httpRequestId": "f0da3980-fb84-4c7e-9ac3-67b6b3fece5d"
+        },
+        "item": {
+          "id": "8c238e42-a59b-4d9a-91fb-744500540b03",
+          "name": "Add Email to Blacklist - Missing Parameters",
+          "request": {
+            "description": {
+              "content": "Test error handling when required parameters are missing",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test2@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a9c84824-ebe1-445f-af43-6420be41b6fc",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates missing parameter\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.include(\"Missing parameter\");",
+                  "});"
+                ],
+                "_lastExecutionId": "d4b82f4b-de80-4b33-85cc-fb7dab843ec9"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test error handling when required parameters are missing",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "70869b8b-9920-4af1-94fa-5f11a044785a",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "36",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test2@example.com\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "e6330e53-fe5e-4206-9e17-461534aa86e0",
+          "status": "BAD REQUEST",
+          "code": 400,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "42"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              77,
+              105,
+              115,
+              115,
+              105,
+              110,
+              103,
+              32,
+              112,
+              97,
+              114,
+              97,
+              109,
+              101,
+              116,
+              101,
+              114,
+              32,
+              97,
+              112,
+              112,
+              95,
+              117,
+              117,
+              105,
+              100,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 3,
+          "responseSize": 42
+        },
+        "id": "8c238e42-a59b-4d9a-91fb-744500540b03",
+        "assertions": [
+          {
+            "assertion": "Status code is 400 (Bad Request)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates missing parameter",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "d5667e3a-932b-4c47-9841-5ce85db2d1bc",
+          "length": 11,
+          "cycles": 1,
+          "position": 5,
+          "iteration": 0,
+          "httpRequestId": "6330abef-73d8-4883-b6a6-a59b516fe9b5"
+        },
+        "item": {
+          "id": "b1f3b155-8c61-49aa-a433-7497c772e5a7",
+          "name": "Add Email to Blacklist - Invalid Email",
+          "request": {
+            "description": {
+              "content": "Test error handling with invalid email format",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"invalid-email\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid email\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b4e3f981-6bbd-4b50-92ca-a7950417ecf7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid email\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.include(\"not a valid email\");",
+                  "});"
+                ],
+                "_lastExecutionId": "e0b431db-1e00-4994-b9d3-15f2e60d15b4"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid email format",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "4149af84-7196-4725-ac74-69a8c747e02c",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "137",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"invalid-email\",\n    \"app_uuid\": \"979d16a0-9fee-4217-8b56-2f3b6bd31344\",\n    \"blocked_reason\": \"Test with invalid email\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "385257cc-5934-4ecd-bd27-92d895635f9b",
+          "status": "BAD REQUEST",
+          "code": 400,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "42"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              32,
+              105,
+              115,
+              32,
+              110,
+              111,
+              116,
+              32,
+              97,
+              32,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 3,
+          "responseSize": 42
+        },
+        "id": "b1f3b155-8c61-49aa-a433-7497c772e5a7",
+        "assertions": [
+          {
+            "assertion": "Status code is 400 (Bad Request)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates invalid email",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "fa3cd0b8-5204-44d2-98f4-3f39e792a5a8",
+          "length": 11,
+          "cycles": 1,
+          "position": 6,
+          "iteration": 0,
+          "httpRequestId": "50fb0db9-68e6-445a-965e-4ee240eb23a6"
+        },
+        "item": {
+          "id": "e43397f7-7f93-43fb-b2cb-414f0892149b",
+          "name": "Add Email to Blacklist - Invalid UUID",
+          "request": {
+            "description": {
+              "content": "Test error handling with invalid UUID format",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test3@example.com\",\n    \"app_uuid\": \"invalid-uuid\",\n    \"blocked_reason\": \"Test with invalid UUID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "147fc4b0-1f30-4dc8-b4b9-36b1036a67a3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 (Bad Request)\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid UUID\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.include(\"not a valid UUID\");",
+                  "});"
+                ],
+                "_lastExecutionId": "e1486579-5124-43da-8b3a-1181232527af"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid UUID format",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "14236139-b506-4af4-85dd-7152aaab7b31",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "116",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test3@example.com\",\n    \"app_uuid\": \"invalid-uuid\",\n    \"blocked_reason\": \"Test with invalid UUID\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "85311cb3-5440-4aa1-84de-c1c84325d9c5",
+          "status": "BAD REQUEST",
+          "code": 400,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "44"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              97,
+              112,
+              112,
+              95,
+              117,
+              117,
+              105,
+              100,
+              32,
+              105,
+              115,
+              32,
+              110,
+              111,
+              116,
+              32,
+              97,
+              32,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              85,
+              85,
+              73,
+              68,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 3,
+          "responseSize": 44
+        },
+        "id": "e43397f7-7f93-43fb-b2cb-414f0892149b",
+        "assertions": [
+          {
+            "assertion": "Status code is 400 (Bad Request)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates invalid UUID",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "b4419099-d985-4574-b045-d2c55aaee66a",
+          "length": 11,
+          "cycles": 1,
+          "position": 7,
+          "iteration": 0,
+          "httpRequestId": "cb843b44-9a27-4e7e-96e3-bfc2e1dbab70"
+        },
+        "item": {
+          "id": "230c28ae-e8dc-4836-9d72-8f4a5b6930c1",
+          "name": "Add Email to Blacklist - Invalid Token",
+          "request": {
+            "description": {
+              "content": "Test error handling with invalid authorization token",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test4@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "39c7d472-c315-424b-83c6-8111fddccec3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid token\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+                  "});"
+                ],
+                "_lastExecutionId": "4a564b12-e8ea-47b0-b02d-5145598a6aed"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test error handling with invalid authorization token",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer invalid_token"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "30cf7625-609e-4fab-8a65-d00da852854e",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "141",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test4@example.com\",\n    \"app_uuid\": \"f212789c-0e3e-420a-abe3-aea1180668a6\",\n    \"blocked_reason\": \"Test with invalid token\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "0abc4b9a-38de-4048-a91f-43da9e400602",
+          "status": "UNAUTHORIZED",
+          "code": 401,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "29"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              73,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              116,
+              111,
+              107,
+              101,
+              110,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 29
+        },
+        "id": "230c28ae-e8dc-4836-9d72-8f4a5b6930c1",
+        "assertions": [
+          {
+            "assertion": "Status code is 401 (Unauthorized)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates invalid token",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "2bad29a6-6016-460d-8acc-a572c3f8b32d",
+          "length": 11,
+          "cycles": 1,
+          "position": 8,
+          "iteration": 0,
+          "httpRequestId": "935309b9-19a0-4a83-a7af-0c86552193da"
+        },
+        "item": {
+          "id": "20d1610c-34c0-4ebe-9a11-309911ed12bd",
+          "name": "Add Email to Blacklist - Missing Authorization",
+          "request": {
+            "description": {
+              "content": "Test error handling when authorization header is missing",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test5@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test without authorization\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "30d4abd1-63bb-487a-9948-1b12b56c49ef",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 (Forbidden)\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates missing authorization\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql(\"Authorization header is required\");",
+                  "});"
+                ],
+                "_lastExecutionId": "e61ae1d0-4260-44c7-a7ac-b3f39f7be5b8"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test error handling when authorization header is missing",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "4db22946-f2a2-4b76-ab65-f7c92e381ca7",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "144",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"test5@example.com\",\n    \"app_uuid\": \"68881dc4-7ed5-4a03-bd23-d72c0a44db62\",\n    \"blocked_reason\": \"Test without authorization\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "e5d61a82-30c7-48a6-bc29-d0ca149ce193",
+          "status": "FORBIDDEN",
+          "code": 403,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "48"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              65,
+              117,
+              116,
+              104,
+              111,
+              114,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              32,
+              104,
+              101,
+              97,
+              100,
+              101,
+              114,
+              32,
+              105,
+              115,
+              32,
+              114,
+              101,
+              113,
+              117,
+              105,
+              114,
+              101,
+              100,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 48
+        },
+        "id": "20d1610c-34c0-4ebe-9a11-309911ed12bd",
+        "assertions": [
+          {
+            "assertion": "Status code is 403 (Forbidden)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates missing authorization",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "0b89c693-8f83-4c94-b372-a00527b63de8",
+          "length": 11,
+          "cycles": 1,
+          "position": 9,
+          "iteration": 0,
+          "httpRequestId": "22917b00-df2c-4f18-a0c1-1b4e22cb0e2f"
+        },
+        "item": {
+          "id": "ab07e0a8-8559-466f-a7de-ff5fbd10d788",
+          "name": "Check Non-existent Email",
+          "request": {
+            "description": {
+              "content": "Check an email that is not in the blacklist",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists",
+                "nonexistent@example.com"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secret_token}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2126ccb5-7b55-4311-bd92-1e4bb9ffc9bb",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Email is not blacklisted\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.blacklisted).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ],
+                "_lastExecutionId": "216a57b5-4993-4f85-bbc4-d037c52e5874"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Check an email that is not in the blacklist",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists",
+              "nonexistent@example.com"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer test_secret_token_123"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "f18d457e-7db5-41cd-b8da-02b962f0c150",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "fb32c3f6-492a-40d0-82a2-9ce88d5e2bcc",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "27"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              98,
+              108,
+              97,
+              99,
+              107,
+              108,
+              105,
+              115,
+              116,
+              101,
+              100,
+              34,
+              58,
+              32,
+              102,
+              97,
+              108,
+              115,
+              101,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 3,
+          "responseSize": 27
+        },
+        "id": "ab07e0a8-8559-466f-a7de-ff5fbd10d788",
+        "assertions": [
+          {
+            "assertion": "Status code is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Email is not blacklisted",
+            "skipped": false
+          },
+          {
+            "assertion": "Response time is less than 1000ms",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "fee4369a-3c60-4d1b-a8b1-f37efe69d248",
+          "length": 11,
+          "cycles": 1,
+          "position": 10,
+          "iteration": 0,
+          "httpRequestId": "30a3dad9-fed4-473f-9458-f0f8f1808d59"
+        },
+        "item": {
+          "id": "62f79a02-0d6b-43e9-8c7a-3756e0999ab7",
+          "name": "Check Email Blacklist - Invalid Token",
+          "request": {
+            "description": {
+              "content": "Test GET endpoint with invalid token",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "blacklists",
+                "test@example.com"
+              ],
+              "host": [
+                "{{base_url}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "902ca76a-790b-4f79-a12d-1ac58565883e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid token\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+                  "});"
+                ],
+                "_lastExecutionId": "f5302319-e60c-4521-8fcd-d2efe0b3a47d"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Test GET endpoint with invalid token",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "blacklists",
+              "test@example.com"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer invalid_token"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "a4fd2e50-a956-4c1a-a6a4-1bc7e5df7f2f",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "9da06b15-d00a-45ae-a4bd-e7b72779e099",
+          "status": "UNAUTHORIZED",
+          "code": 401,
+          "header": [
+            {
+              "key": "Server",
+              "value": "Werkzeug/3.1.3 Python/3.9.13"
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 20 Oct 2025 01:51:30 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "29"
+            },
+            {
+              "key": "Connection",
+              "value": "close"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              10,
+              32,
+              32,
+              34,
+              109,
+              115,
+              103,
+              34,
+              58,
+              32,
+              34,
+              73,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              116,
+              111,
+              107,
+              101,
+              110,
+              34,
+              10,
+              125,
+              10
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 29
+        },
+        "id": "62f79a02-0d6b-43e9-8c7a-3756e0999ab7",
+        "assertions": [
+          {
+            "assertion": "Status code is 401 (Unauthorized)",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates invalid token",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 436
+    },
+    "failures": [],
+    "error": null
+  }
+}

@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 from flask import Flask
-from .routes.blacklist_router import blacklist_bp
-from .config.config import Config
-from .models.models import db
+from routes.blacklist_router import blacklist_bp
+from config.config import Config
+from models.models import db
 
 
 def create_app():
