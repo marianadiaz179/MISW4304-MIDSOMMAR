@@ -115,3 +115,24 @@ La documentación de postman la puedes encontrar [aqui](https://documenter.getpo
         "msg": "blocked_reason must have a maximum of 255 characters"
     }
     ```
+
+### 2. Verificar si un email esta en la lista negra global
+
+**EP:** `GET /blacklists/:email`
+
+**Descripción:** Verifica si un correo electrónico esta en la lista negra; solo los usuarios autenticados pueden hacerlo.
+
+1. Cuando una solicitud GET se procesa correctamente, el servidor devuelve un código de estado 201 y un mensaje de:
+   
+```json
+{
+    "blacklisted": true,
+    "blocked_reason": "No especificado"
+}
+```
+```json
+{
+    "blacklisted": false
+}
+```
+
