@@ -2,8 +2,8 @@ import re
 import uuid
 from flask import request
 
-from api.src.services.auth_service import validate_token
-from api.src.models.models import Blacklist, db
+from ..services.auth_service import validate_token
+from ..models.models import Blacklist, db
 
 
 # --------------------- Utils ---------------------
@@ -71,3 +71,16 @@ def add_email_to_blacklist(data):
 
     # Return response
     return {"msg": "Email added to the blacklist"}, 201
+
+def is_email_blacklisted(email):
+    # Check if email is blacklisted
+    blacklisted = Blacklist.query.filter_by(email=email).first()
+
+    # Return response
+    if not blacklisted:
+        return {"blacklisted": False}, 200
+    else:
+        return {
+            "blacklisted": True,
+            "blocked_reason": blacklisted.blocked_reason or "No especificado",
+        }, 200
