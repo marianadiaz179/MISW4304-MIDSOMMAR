@@ -107,6 +107,25 @@ deploy-check: ## Check deployment package
 		echo "$(YELLOW)💡 Run 'make deploy-package' first$(NC)"; \
 	fi
 
+test-production: ## Test production deployment (requires URL as argument)
+	@echo "$(BLUE)🧪 Testing production deployment...$(NC)"
+	@if [ -z "$(URL)" ]; then \
+		echo "$(RED)❌ Error: URL is required$(NC)"; \
+		echo "$(YELLOW)💡 Usage: make test-production URL=https://your-app.elasticbeanstalk.com$(NC)"; \
+	else \
+		./test_production.sh $(URL); \
+	fi
+
+tutorial-help: ## Show tutorial steps
+	@echo "$(BLUE)📋 AWS Beanstalk Tutorial Steps$(NC)"
+	@echo "=================================="
+	@echo "$(GREEN)1. Create IAM Role for EC2 Instance Profile$(NC)"
+	@echo "$(GREEN)2. Create Elastic Beanstalk Application$(NC)"
+	@echo "$(GREEN)3. Deploy Flask Application$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📖 See TUTORIAL_STEPS.md for detailed instructions$(NC)"
+	@echo "$(YELLOW)🔧 See ENVIRONMENT_VARIABLES.md for environment setup$(NC)"
+
 lint: ## Run code linting
 	@echo "$(BLUE)🔍 Running code linting...$(NC)"
 	@$(VENV)/bin/flake8 $(API_DIR)/src/ || echo "$(YELLOW)⚠️  Linting issues found$(NC)"
