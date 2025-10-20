@@ -1,0 +1,631 @@
+{
+	"info": {
+		"_postman_id": "blacklist-microservice-tests",
+		"name": "Blacklist Microservice API - With Tests",
+		"description": "Complete collection for testing the Blacklist Microservice endpoints with Newman test scripts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is 'pong'\", function () {",
+							"    pm.expect(pm.response.text()).to.eql(\"pong\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/blacklists/ping",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists",
+						"ping"
+					]
+				},
+				"description": "Health check endpoint to verify the service is running"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Success",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a unique email for testing",
+							"const timestamp = Date.now();",
+							"pm.globals.set(\"test_email\", `test${timestamp}@example.com`);",
+							"pm.globals.set(\"test_uuid\", pm.variables.replaceIn('{{$randomUUID}}'));"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has success message\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.eql(\"Email added to the blacklist\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function () {",
+							"    pm.response.to.be.json;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{test_uuid}}\",\n    \"blocked_reason\": \"Test reason for blacklisting\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Add an email to the global blacklist successfully"
+			},
+			"response": []
+		},
+		{
+			"name": "Check Email Blacklist Status - Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Email is blacklisted\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.blacklisted).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Blocked reason is present\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.blocked_reason).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/blacklists/{{test_email}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists",
+						"{{test_email}}"
+					]
+				},
+				"description": "Check if the previously added email is in the blacklist"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Duplicate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409 (Conflict)\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"",
+							"pm.test(\"Response indicates email already exists\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.eql(\"Email is already in the blacklist\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Duplicate test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Try to add the same email again to test duplicate handling"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Missing Parameters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response indicates missing parameter\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.include(\"Missing parameter\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test2@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Test error handling when required parameters are missing"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Invalid Email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response indicates invalid email\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.include(\"not a valid email\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"invalid-email\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid email\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Test error handling with invalid email format"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Invalid UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response indicates invalid UUID\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.include(\"not a valid UUID\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test3@example.com\",\n    \"app_uuid\": \"invalid-uuid\",\n    \"blocked_reason\": \"Test with invalid UUID\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Test error handling with invalid UUID format"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Invalid Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response indicates invalid token\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer invalid_token",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test4@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test with invalid token\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Test error handling with invalid authorization token"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Email to Blacklist - Missing Authorization",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 403 (Forbidden)\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							"pm.test(\"Response indicates missing authorization\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.eql(\"Authorization header is required\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test5@example.com\",\n    \"app_uuid\": \"{{$randomUUID}}\",\n    \"blocked_reason\": \"Test without authorization\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/blacklists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists"
+					]
+				},
+				"description": "Test error handling when authorization header is missing"
+			},
+			"response": []
+		},
+		{
+			"name": "Check Non-existent Email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Email is not blacklisted\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.blacklisted).to.be.false;",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{secret_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/blacklists/nonexistent@example.com",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists",
+						"nonexistent@example.com"
+					]
+				},
+				"description": "Check an email that is not in the blacklist"
+			},
+			"response": []
+		},
+		{
+			"name": "Check Email Blacklist - Invalid Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 (Unauthorized)\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response indicates invalid token\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.msg).to.eql(\"Invalid token\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer invalid_token",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/blacklists/test@example.com",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blacklists",
+						"test@example.com"
+					]
+				},
+				"description": "Test GET endpoint with invalid token"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "secret_token",
+			"value": "test_secret_token_123",
+			"type": "string"
+		}
+	]
+}
