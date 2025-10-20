@@ -1,7 +1,7 @@
 from flask import request, Blueprint
 
-from services.auth_service import validate_token
-from services.blacklist_service import (
+from ..services.auth_service import validate_token
+from ..services.blacklist_service import (
     add_email_to_blacklist,
     is_email_blacklisted,
 )

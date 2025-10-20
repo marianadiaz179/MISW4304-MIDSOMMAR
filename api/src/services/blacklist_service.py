@@ -2,8 +2,8 @@ import re
 import uuid
 from flask import request
 
-from services.auth_service import validate_token
-from models.models import Blacklist, db
+from .auth_service import validate_token
+from ..models.models import Blacklist, db
 
 
 # --------------------- Utils ---------------------
