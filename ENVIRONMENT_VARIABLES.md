@@ -3,13 +3,22 @@
 **Universidad de los Andes - MISW4304**  
 *Configuración de Variables de Entorno para el Microservicio Blacklist*
 
+## ⚠️ **IMPORTANTE: Proceso de Configuración Dinámica**
+
+### **Orden Correcto de Despliegue:**
+1. **Primero**: Despliega la aplicación en Beanstalk (usará SQLite por defecto)
+2. **Segundo**: Crea la instancia RDS PostgreSQL
+3. **Tercero**: Obtén el endpoint de RDS
+4. **Cuarto**: Configura las variables de entorno en Beanstalk Console
+5. **Quinto**: Redespliega la aplicación
+
 ## 📋 Variables Requeridas
 
-### Base de Datos
+### Base de Datos (Configurar DESPUÉS de crear RDS)
 ```
 DB_USER=postgres
 DB_PASSWORD=tu_password_seguro_aqui
-DB_HOST=tu_rds_endpoint_aqui
+DB_HOST=tu_rds_endpoint_aqui  # ← Obtener de RDS Console
 DB_NAME=blacklist_db
 ```
 
