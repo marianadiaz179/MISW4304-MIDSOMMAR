@@ -47,6 +47,8 @@ python -m api.src.app
 
 ## Descripción de los endpoints
 
+La documentación de postman la puedes encontrar [aqui](https://documenter.getpostman.com/view/25797145/2sB3QQKTZn)
+
 ### 1. Agregar un email a la lista negra global
 
 **EP:** `POST /blacklists`
