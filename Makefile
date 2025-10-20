@@ -93,6 +93,20 @@ docker-run: ## Run Docker container
 	@echo "$(BLUE)🐳 Running Docker container...$(NC)"
 	@cd $(API_DIR) && docker run -p 3000:3000 --env-file ../.env blacklist-microservice
 
+deploy-package: ## Create deployment package for AWS Beanstalk
+	@echo "$(BLUE)📦 Creating deployment package...$(NC)"
+	@./create_deployment_package.sh
+
+deploy-check: ## Check deployment package
+	@echo "$(BLUE)🔍 Checking deployment package...$(NC)"
+	@if [ -f "blacklist-microservice-deployment.zip" ]; then \
+		echo "$(GREEN)✅ Deployment package exists$(NC)"; \
+		ls -lh blacklist-microservice-deployment.zip; \
+	else \
+		echo "$(RED)❌ Deployment package not found$(NC)"; \
+		echo "$(YELLOW)💡 Run 'make deploy-package' first$(NC)"; \
+	fi
+
 lint: ## Run code linting
 	@echo "$(BLUE)🔍 Running code linting...$(NC)"
 	@$(VENV)/bin/flake8 $(API_DIR)/src/ || echo "$(YELLOW)⚠️  Linting issues found$(NC)"
