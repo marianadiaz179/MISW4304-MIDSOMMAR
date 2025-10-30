@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 641053168783.dkr.ecr.us-east-2.amazonaws.com
+      - pip install pipenv
+      - cd blacklists
+      - pipenv install --dev
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t blacklist/container-repository .
+      - docker tag blacklist/container-repository:latest 641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest
+      - echo Build completed on `date`
+      - echo Running unit tests...
+      - FLASK_ENV=testing SECRET_TOKEN=secretoken pipenv run pytest --cov=src
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push 641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest
+artifacts:
+  files:
+    - "**/*"

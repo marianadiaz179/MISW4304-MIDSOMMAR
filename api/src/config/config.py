@@ -19,3 +19,8 @@ class Config:
         SQLALCHEMY_DATABASE_URI = "sqlite:///blacklist_test.db"
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+class TestingConfig(Config):
+    SQLALCHEMY_DATABASE_URI = "sqlite:///test_database.db"
+    TESTING = True
