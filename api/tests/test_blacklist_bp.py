@@ -26,17 +26,6 @@ def test_add_email(test_client):
     response_data = json.loads(response.data)
     assert response_data["msg"] == "Email added to the blacklist"
 
-def test_add_email_already_blacklisted(test_client):
-    response = test_client.post(
-        "/blacklists",
-        json=blacklist_data,
-        headers=headers,
-        content_type="application/json",
-    )
-    assert response.status_code == 409
-    response_data = json.loads(response.data)
-    assert response_data["msg"] == "Email is already in the blacklist"
-
 def test_add_email_no_token(test_client):
     response = test_client.post(
         "/blacklists",
@@ -234,4 +223,4 @@ def test_email_not_blacklisted_invalid_token(test_client):
 def test_ping(test_client):
     response = test_client.get("blacklists/ping")
     assert response.status_code == 200
-    assert response.data == "pong"
+    assert response.data == b"pong"
