@@ -11,7 +11,8 @@ db_user = os.getenv("DB_USER", "postgres")
 db_pass = os.getenv("DB_PASSWORD", "postgres")
 db_host = os.getenv("DB_HOST", "database-1.cn4u2kgsmb84.us-east-2.rds.amazonaws.com")
 db_name = os.getenv("DB_NAME", "postgres")
-db_port = os.getenv("DB_PORT", "5432")
+# Ensure db_port has a valid default value if empty or not set
+db_port = os.getenv("DB_PORT", "").strip() or "5432"
 
 # Log environment variables (without sensitive data)
 logger.info("=" * 50)
@@ -27,8 +28,8 @@ class Config:
     # Use PostgreSQL if environment variables are set, otherwise SQLite for local development
     if db_user and db_pass and db_host and db_name:
         # Production: PostgreSQL (AWS RDS)
-        SQLALCHEMY_DATABASE_URI = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
-        logger.info(f"Using PostgreSQL database: {db_host}:{db_port}/{db_name}")
+        SQLALCHEMY_DATABASE_URI = f"postgresql://{db_user}:{db_pass}@{db_host}/{db_name}"
+        logger.info(f"Using PostgreSQL database: {db_host}/{db_name}")
     else:
         # Development: SQLite (local testing)
         SQLALCHEMY_DATABASE_URI = "sqlite:///blacklist_test.db"
