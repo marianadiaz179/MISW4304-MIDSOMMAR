@@ -1,21 +1,21 @@
 {
-    "AWSEBDockerrunVersion": "1",
-    "Image": {
-      "Name": "641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest",
-      "Update": "true"
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest",
+    "Update": "true"
+  },
+  "Ports": [{ "ContainerPort": 5000 }],
+  "Logging": "/var/log/app",
+  "environment": [
+    { "name": "DB_USER", "value": "postgres" },
+    { "name": "DB_PASSWORD", "value": "postgres" },
+    {
+      "name": "DB_HOST",
+      "value": "database-1.cn4u2kgsmb84.us-east-2.rds.amazonaws.com"
     },
-    "Ports": [
-      { "ContainerPort": 3000 }
-    ],
-    "Logging": "/var/log/app",
-    "environment": [
-      { "name": "DB_USER",        "value": "postgres" },
-      { "name": "DB_PASSWORD",    "value": "postgres" },
-      { "name": "DB_HOST",        "value": "database-1.cn4u2kgsmb84.us-east-2.rds.amazonaws.com" },
-      { "name": "DB_PORT",        "value": "5432" },
-      { "name": "DB_NAME",        "value": "postgres" },
-      { "name": "SECRET_TOKEN",   "value": "secretoken" },
-      { "name": "FLASK_ENV",      "value": "production" }
-    ]
-  }
-  
+    { "name": "DB_PORT", "value": "5432" },
+    { "name": "DB_NAME", "value": "postgres" },
+    { "name": "SECRET_TOKEN", "value": "secretoken" },
+    { "name": "FLASK_ENV", "value": "production" }
+  ]
+}
