@@ -21,6 +21,13 @@ RUN pip install --no-cache-dir pipenv && \
 # Tell Flask/Gunicorn where the app is (adjust if you use an app factory)
 # Example for a module-level `app` inside src/app.py -> import path `src.app:app`
 ENV APP_IMPORT="src.app:app"
+ENV DB_USER=postgres
+ENV DB_PASSWORD=postgres
+ENV DB_HOST=database-1.cn4u2kgsmb84.us-east-2.rds.amazonaws.com
+ENV DB_PORT=5432
+ENV DB_NAME=postgres
+ENV SECRET_TOKEN=secretoken
+ENV FLASK_ENV=production
 
 # EB injects PORT (commonly 5000). We honor that.
 EXPOSE 5000
