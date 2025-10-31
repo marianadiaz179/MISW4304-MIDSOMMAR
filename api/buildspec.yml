@@ -21,6 +21,9 @@ phases:
     commands:
       - echo Pushing the Docker image...
       - docker push 641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest
+      - cd ..
+      - cp api/Dockerrun.aws.json Dockerrun.aws.json
 artifacts:
   files:
     - "**/*"
+  base-directory: .

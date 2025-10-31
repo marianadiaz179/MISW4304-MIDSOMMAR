@@ -1,0 +1,38 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "641053168783.dkr.ecr.us-east-2.amazonaws.com/blacklist/container-repository:latest",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "3000"
+    }
+  ],
+  "Environment": [
+    {
+      "Name": "DB_USER",
+      "Value": "postgres"
+    },
+    {
+      "Name": "DB_PASSWORD",
+      "Value": "postgres"
+    },
+    {
+      "Name": "DB_HOST",
+      "Value": "http://database-1.cn4u2kgsmb84.us-east-2.rds.amazonaws.com/"
+    },
+    {
+      "Name": "DB_PORT",
+      "Value": "5432"
+    },
+    {
+      "Name": "DB_NAME",
+      "Value": "postgres"
+    },
+    {
+      "Name": "SECRET_TOKEN",
+      "Value": "secretoken"
+    }
+  ]
+}
