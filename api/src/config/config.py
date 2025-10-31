@@ -8,7 +8,7 @@ db_user = os.getenv("DB_USER")
 db_pass = os.getenv("DB_PASSWORD")
 db_host = os.getenv("DB_HOST")
 db_name = os.getenv("DB_NAME")
-db_port = os.getenv("DB_PORT")
+db_port = os.getenv("DB_PORT", "5432")
 
 class Config:
     # Use PostgreSQL if environment variables are set, otherwise SQLite for local development
