@@ -3,14 +3,25 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 070238434783.dkr.ecr.us-east-1.amazonaws.com
       - echo Installing dependencies...
       - pip install pipenv
       - cd api
       - pipenv install --dev
   build:
     commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t blacklist-microservice .
+      - docker tag blacklist-microservice:latest 070238434783.dkr.ecr.us-east-1.amazonaws.com/blacklist-microservice:latest
+      - echo Build completed on `date`
       - echo Running unit tests...
       - FLASK_ENV=testing SECRET_TOKEN=secretoken pipenv run pytest --cov=src
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push 070238434783.dkr.ecr.us-east-1.amazonaws.com/blacklist-microservice:latest
 artifacts:
   files:
     - "**/*"
