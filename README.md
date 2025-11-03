@@ -8,7 +8,6 @@ Esta sección describe los servicios desarrollados en Python 3.12 utilizando Fla
 
 En la raíz del proyecto, debe existir un archivo .env con la siguiente configuración:
 
-
 ```
 DB_USER=
 DB_PASSWORD=
