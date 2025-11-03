@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM public.ecr.aws/docker/library/python:3.9-slim
 
 # Prevent Python writing .pyc and enabling output flushing
 ENV PYTHONDONTWRITEBYTECODE=1 \
