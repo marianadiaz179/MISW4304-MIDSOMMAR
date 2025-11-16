@@ -37,3 +37,8 @@ def get(email):
 @blacklist_bp.route("/blacklists/ping", methods=["GET"])
 def ping():
     return "pong", 200
+
+# 3.1 Health check in base route
+@blacklist_bp.route("/", methods=["GET"])
+def base_route():
+    return "pong", 200
