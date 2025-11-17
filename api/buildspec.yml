@@ -14,14 +14,14 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t blacklist-microservice .
-      - docker tag blacklist-microservice:latest 892255149456.dkr.ecr.us-east-1.amazonaws.com/python-app:latest
+      - docker tag blacklist-microservice:latest 892255149456.dkr.ecr.us-east-1.amazonaws.com/python_app:latest
       - echo Build completed on `date`
       - echo Running unit tests...
       - FLASK_ENV=testing SECRET_TOKEN=secretoken pipenv run pytest --cov=src
   post_build:
     commands:
       - echo Pushing the Docker image...
-      - docker push 892255149456.dkr.ecr.us-east-1.amazonaws.com/python-app:latest
+      - docker push 892255149456.dkr.ecr.us-east-1.amazonaws.com/python_app:latest
 artifacts:
   files:
     - "**/*"
