@@ -14,7 +14,7 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t blacklist-microservice .
-      - docker tag blacklist-microservice:latest 892255149456.dkr.ecr.us-east-1.amazonaws.com/blacklist-microservice:latest
+      - docker tag python-app:latest 892255149456.dkr.ecr.us-east-1.amazonaws.com/blacklist-microservice:latest
       - echo Build completed on `date`
       - echo Running unit tests...
       - FLASK_ENV=testing SECRET_TOKEN=secretoken pipenv run pytest --cov=src
